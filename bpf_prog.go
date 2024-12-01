@@ -5,11 +5,19 @@ package main
 
 import (
 	"bytes"
+	"debug/elf"
 	"encoding/binary"
 	"fmt"
+	"os"
+	"time"
 
+	"github.com/Asphaltt/tailcall-issues/internal/assert"
 	"github.com/cilium/ebpf"
 	"github.com/knightsc/gapstone"
+)
+
+const (
+	kcorePath = "/proc/kcore"
 )
 
 type bpfProgInfo struct {
@@ -17,8 +25,11 @@ type bpfProgInfo struct {
 	name  string
 	jited bool
 
-	tailCallReachable      bool
-	fixedTailcallHierarchy bool
+	tailCallReachable bool
+
+	fixedTailcallHierarchy                      bool
+	fixedTailcallInfiniteLoopCausedByTrampoline bool
+	failedDetectInfiniteLoopCausedByTrampoline  bool
 
 	issueInvalidOffset bool
 
@@ -26,7 +37,7 @@ type bpfProgInfo struct {
 	stackDepth uint32
 }
 
-func newBpfProgInfo(prog *ebpf.Program) (*bpfProgInfo, error) {
+func newBpfProgInfo(prog *ebpf.Program, checkTramp bool) (*bpfProgInfo, error) {
 	pinfo, err := prog.Info()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get program info: %w", err)
@@ -136,5 +147,87 @@ func newBpfProgInfo(prog *ebpf.Program) (*bpfProgInfo, error) {
 	offset := -int32(binary.LittleEndian.Uint32(insn.Bytes[3:]))
 	info.issueInvalidOffset = (offset & 0x7) != 0
 
+	if !checkTramp {
+		return &info, nil
+	}
+
+	opcodes := insns[0].Bytes
+	if opcodes[0] != 0xe8 /* callq */ {
+		return &info, fmt.Errorf("failed to find callq instruction")
+	}
+
+	kaddrTramp := jitedKsyms[0] + uintptr(binary.NativeEndian.Uint32(opcodes[1:])) + 5 /* callq */
+
+	var data []byte
+
+	for i := 0; i < 5; i++ {
+		buf, ok := readKcore(uint64(kaddrTramp), 300)
+		if ok {
+			data = buf
+			break
+		}
+
+		time.Sleep(1 * time.Second)
+	}
+
+	if len(data) == 0 {
+		info.failedDetectInfiniteLoopCausedByTrampoline = true
+		return &info, nil
+	}
+
+	insns, b, pc = insns[:0], data[:], uint64(kaddrTramp)
+	for len(b) != 0 {
+		insts, err := engine.Disasm(b, pc, 1)
+		if err != nil && len(b) <= 10 {
+			break
+		}
+		if err != nil {
+			return &info, fmt.Errorf("failed to disassemble instruction: %w", err)
+		}
+
+		insn := insts[0]
+		insns = append(insns, insn)
+
+		insnSize := insn.Size
+		if insnSize == 1 && insn.Bytes[0] == 0xc3 /* retq */ {
+			break
+		}
+
+		pc += uint64(insnSize)
+		b = b[insnSize:]
+	}
+
+	for i := range insns {
+		insn := insns[i]
+		if len(insn.Bytes) == 1 && insn.Bytes[0] == 0x50 /* pushq %rax */ {
+			info.fixedTailcallInfiniteLoopCausedByTrampoline = true
+			break
+		}
+
+		if len(insn.Bytes) == 1 && insn.Bytes[0] == 0xc3 /* retq */ {
+			break
+		}
+	}
+
 	return &info, nil
+}
+
+func readKcore(kaddr uint64, bytes uint) ([]byte, bool) {
+	fd, err := os.Open(kcorePath)
+	assert.NoErr(err, "Failed to open %s: %v", kcorePath)
+	defer fd.Close()
+
+	kcoreElf, err := elf.NewFile(fd)
+	assert.NoErr(err, "Failed to read %s: %v", kcorePath)
+
+	data := make([]byte, bytes)
+	for _, prog := range kcoreElf.Progs {
+		if prog.Vaddr <= kaddr && kaddr < prog.Vaddr+prog.Memsz {
+			n, err := fd.ReadAt(data, int64(prog.Off+kaddr-prog.Vaddr))
+			assert.NoErr(err, "Failed to read %s: %v", kcorePath)
+			return data[:n], true
+		}
+	}
+
+	return nil, false
 }

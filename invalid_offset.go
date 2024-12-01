@@ -25,7 +25,7 @@ func checkIssueInvalidOffset(progID uint32) {
 	err = objs.JmpTable.Put(uint32(0), objs.Tailcallee)
 	assert.NoErr(err, "Failed to put tailcallee into jmp table: %v")
 
-	info, err := newBpfProgInfo(objs.Entry)
+	info, err := newBpfProgInfo(objs.Entry, false)
 	assert.NoErr(err, "Failed to get program info: %v")
 
 	if info.issueInvalidOffset {
@@ -43,7 +43,7 @@ func checkIssueInvalidOffset(progID uint32) {
 		assert.NoErr(err, "Failed to get program from ID: %v")
 		defer prog.Close()
 
-		info, err := newBpfProgInfo(prog)
+		info, err := newBpfProgInfo(prog, false)
 		assert.NoErr(err, "Failed to get program info: %v")
 		if info.issueInvalidOffset {
 			log.Printf("BPF program (id=%d name=%s) has invalid offset issue", progID, info.name)

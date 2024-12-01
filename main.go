@@ -17,5 +17,8 @@ func main() {
 
 	if checkInvalidOffset {
 		checkIssueInvalidOffset(bpfProgID)
+		return
 	}
+
+	detectIssues()
 }

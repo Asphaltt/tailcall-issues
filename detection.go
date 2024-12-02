@@ -91,7 +91,7 @@ func detectIssues() {
 	color.New(color.FgGreen, color.Bold).Fprint(&sb, "detection results:\n\n")
 
 	issue := &tailcallIssueInvalidTailcallee
-	if !haveFreplace || invalidTailcallee.issueInvalidTailcalleeNotExists {
+	if !haveFreplace {
 		printIssueState(&sb, issue, issueStateNotExists, color.New(color.FgGreen))
 	} else if invalidTailcallee.issueInvalidTailcallee {
 		printIssueState(&sb, issue, issueStateNotFixed, color.New(color.FgRed, color.Bold))
@@ -133,7 +133,7 @@ func detectIssues() {
 	fmt.Fprintln(&sb)
 
 	issue = &tailcallIssuePanicCausedByUpdatingAttachedFreplaceProgToProgArray
-	if !haveFreplace || invalidTailcallee.issueInvalidTailcalleeNotExists {
+	if !haveFreplace || invalidTailcallee.issuePanicCausedByFreplaceNotExists {
 		printIssueState(&sb, issue, issueStateNotExists, color.New(color.FgGreen))
 	} else {
 		printIssueState(&sb, issue, issueStateCannotDetect, color.New(color.FgYellow))

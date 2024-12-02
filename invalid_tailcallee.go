@@ -17,9 +17,9 @@ type resultInvalidTailcallee struct {
 	oldKernel    bool
 	haveFreplace bool
 
-	fixedInfiniteLoopCausedByFreplace bool
-	issueInvalidTailcallee            bool
-	issueInvalidTailcalleeNotExists   bool
+	fixedInfiniteLoopCausedByFreplace   bool
+	issueInvalidTailcallee              bool
+	issuePanicCausedByFreplaceNotExists bool
 }
 
 func detectInvalidTailcallee() (resultInvalidTailcallee, error) {
@@ -71,7 +71,7 @@ func detectInvalidTailcallee() (resultInvalidTailcallee, error) {
 
 	err = progArray.Put(uint32(1), prog)
 	if err != nil && errors.Is(err, unix.EINVAL) {
-		res.issueInvalidTailcalleeNotExists = true
+		res.issuePanicCausedByFreplaceNotExists = true
 	}
 
 	err = progArray.Put(uint32(1), coll.Programs["freplace_tailcallee_invalid"])

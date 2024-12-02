@@ -101,10 +101,10 @@ var tailcallIssuePanicCausedByUpdatingAttachedFreplaceProgToProgArray = tailcall
 
 var tailcallIssueInvalidTailcallee = tailcallIssue{
 	name:        "invalid tailcallee",
-	commit:      "4a9c7bbe2ed4",
-	commitTitle: "bpf: Resolve to prog->aux->dst_prog->type only for BPF_PROG_TYPE_EXT",
-	commitURL:   "https://github.com/torvalds/linux/commit/4a9c7bbe2ed4d2b240674b1fb606c41d3940c412",
-	patchURL:    "https://lore.kernel.org/bpf/20220330011456.2984509-1-kafai@fb.com/",
+	commit:      "1c123c567fb1",
+	commitTitle: "bpf: Resolve fext program type when checking map compatibility",
+	commitURL:   "https://github.com/torvalds/linux/commit/1c123c567fb138ebd187480b7fc0610fcb0851f5",
+	patchURL:    "https://lore.kernel.org/all/20221214230254.790066-1-toke@redhat.com/",
 
 	fixedKernelVersion: "v6.2",
 	sinceKernelVersion: "v5.6",

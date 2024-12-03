@@ -141,7 +141,7 @@ func detectIssues() {
 	fmt.Fprintln(&sb)
 
 	issue = &tailcallIssueInfiniteLoopCausedByFreplace
-	if !haveFreplace {
+	if !haveFreplace || invalidTailcallee.issuePanicCausedByFreplaceNotExists {
 		printIssueState(&sb, issue, issueStateNotExists, color.New(color.FgGreen))
 	} else if invalidTailcallee.fixedInfiniteLoopCausedByFreplace {
 		printIssueState(&sb, issue, issueStateFixed, color.New(color.FgGreen, color.Bold))

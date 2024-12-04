@@ -84,7 +84,7 @@ issue:  invalid loading offset of tail_call_cnt for bpf2bpf
 state:  not fixed
 
 issue:  tailcall infinite loop caused by trampoline
-state:  cannot detect
+state:  not fixed
 
 issue:  tailcall hierarchy
 state:  not fixed
@@ -93,7 +93,7 @@ issue:  panic caused by updating attached freplace prog to prog array
 state:  not exists
 
 issue:  tailcall infinite loop caused by freplace
-state:  not fixed
+state:  not exists
 ```
 
 ## Build

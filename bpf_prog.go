@@ -47,7 +47,7 @@ func newBpfProgInfo(prog *ebpf.Program, checkTramp bool) (*bpfProgInfo, error) {
 	info.id, _ = pinfo.ID()
 	info.name = pinfo.Name
 
-	jitedKsyms, _ := pinfo.KsymAddrs()
+	jitedKsyms, _ := pinfo.JitedKsymAddrs()
 	jitedInsns, _ := pinfo.JitedInsns()
 	if len(jitedInsns) == 0 {
 		return &info, nil

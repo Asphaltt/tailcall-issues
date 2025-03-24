@@ -27,3 +27,5 @@ go.work
 .vscode/
 
 /tailcall-issues
+
+*.DS_Store

@@ -92,7 +92,8 @@ func newBpfProgInfo(prog *ebpf.Program, checkTramp bool) (*bpfProgInfo, error) {
 	}
 
 	insn := insns[idxPushRbp-1]
-	info.tailCallReachable = len(insn.Bytes) == 2 && insn.Bytes[0] == 0x31 && insn.Bytes[1] == 0xc0
+	info.tailCallReachable = bytes.Equal(insn.Bytes, []byte{0x31, 0xc0}) /* xor eax, eax */ ||
+		bytes.Equal(insn.Bytes, []byte{0x48, 0x31, 0xc0}) /* xor rax, rax */
 	if !info.tailCallReachable {
 		return &info, nil
 	}

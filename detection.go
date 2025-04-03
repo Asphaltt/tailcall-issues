@@ -113,8 +113,6 @@ func detectIssues() {
 	issue = &tailcallIssueInfiniteLoopCausedByTrampoline
 	if !haveBpf2bpf {
 		printIssueState(&sb, issue, issueStateNotExists, color.New(color.FgGreen))
-	} else if info.failedDetectInfiniteLoopCausedByTrampoline {
-		printIssueState(&sb, issue, issueStateCannotDetect, color.New(color.FgYellow))
 	} else if info.fixedTailcallInfiniteLoopCausedByTrampoline {
 		printIssueState(&sb, issue, issueStateFixed, color.New(color.FgGreen, color.Bold))
 	} else {

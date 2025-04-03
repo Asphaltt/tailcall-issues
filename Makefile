@@ -18,6 +18,9 @@ BPF_SRC_LOOP := bpf/infinite-loop-caused-by-trampoline.c
 BPF_OBJ_INVALID_TAILCALLEE := invalidtailcallee_bpfeb.o invalidtailcallee_bpfel.o
 BPF_SRC_INVALID_TAILCALLEE := bpf/invalid-tailcallee.c
 
+BPF_OBJ_READ := read_bpfeb.o read_bpfel.o
+BPF_SRC_READ := bpf/read.c
+
 LIBCAPSTONE_OBJ := capstone/build/libcapstone.a
 
 $(LIBCAPSTONE_OBJ):
@@ -38,9 +41,12 @@ $(BPF_OBJ_LOOP): $(BPF_SRC_LOOP)
 $(BPF_OBJ_INVALID_TAILCALLEE): $(BPF_SRC_INVALID_TAILCALLEE)
 	$(GOGEN) ./invalid_tailcallee.go
 
+$(BPF_OBJ_READ): $(BPF_SRC_READ)
+	$(GOGEN) ./read.go
+
 .DEFAULT_GOAL := build
 .PHONY: build
-build: $(BPF_OBJ_INVALID_OFFSET) $(BPF_OBJ_BPF2BPF) $(BPF_OBJ_LOOP) $(BPF_OBJ_INVALID_TAILCALLEE) $(LIBCAPSTONE_OBJ)
+build: $(BPF_OBJ_INVALID_OFFSET) $(BPF_OBJ_BPF2BPF) $(BPF_OBJ_LOOP) $(BPF_OBJ_INVALID_TAILCALLEE) $(BPF_OBJ_READ) $(LIBCAPSTONE_OBJ)
 	$(GOBUILD_CGO_LDFLAGS) $(GOBUILD)
 
 .PHONY: clean
